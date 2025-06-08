@@ -30,17 +30,31 @@ def oracle(a: int, N: int) -> QuantumCircuit:
         that returns |x>_1 |a*y mod N>_n when x=1,
         where n = 2*ceil(log2(N))
     """
-    #TODO
+    #TODO see Figure 7
+    #TODO don't forget to use to_gate() when composing subcircuits
     pass
 
 ########################################################################
 # Subcircuits
 ########################################################################
 
-#TODO
+def adder(a: int) -> QuantumCircuit:
+    #TODO see Section 2.1 and Figure 3
+    pass
+
+def cc_adder_mod(a: int, N: int) -> QuantumCircuit:
+    #TODO doubly controlled, see Section 2.2 and Figure 5
+    pass
+
+def c_mult_mod(a: int, N: int) -> QuantumCircuit:
+    #TODO controlled, see Section 2.3 and Figure 6
+    pass
+
+#TODO we also need to write a controlled swap circuit, since we are
+# probably not allowed to use the built in swap gate :(
 
 ########################################################################
 # Other helper functions
 ########################################################################
 
-#TODO
+#TODO anything that is not a circuit can go here
