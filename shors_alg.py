@@ -5,7 +5,6 @@ from qiskit.circuit import QuantumCircuit, QuantumRegister, AncillaRegister
 from qiskit.quantum_info import Statevector
 #import matplotlib.pyplot as plt
 
-import numpy as np
 import math
 
 ########################################################################
@@ -34,7 +33,7 @@ def oracle(a: int, N: int) -> QuantumCircuit:
     #TODO don't forget to use to_gate() when composing subcircuits
 
     # Number of bits required to represent N
-    n = ceil(log2(N))
+    n = math.ceil(math.log2(N))
 
     # One control qubit
     control_qr = QuantumRegister(1, name="c")
