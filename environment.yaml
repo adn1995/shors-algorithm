@@ -1,4 +1,4 @@
-name: qc-sudoku-solver-env
+name: shors_alg-env
 channels:
   - conda-forge
 dependencies:
