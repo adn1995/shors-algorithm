@@ -3,6 +3,7 @@
 
 from qiskit.circuit import QuantumCircuit, QuantumRegister, AncillaRegister
 from qiskit.quantum_info import Statevector
+from qiskit.circuit.library import QFT
 #import matplotlib.pyplot as plt
 
 import numpy as np
@@ -38,8 +39,31 @@ def oracle(a: int, N: int) -> QuantumCircuit:
 # Subcircuits
 ########################################################################
 
-def adder(a: int) -> QuantumCircuit:
+def adder(a: int, N: int) -> QuantumCircuit:
     #TODO see Section 2.1 and Figure 3
+    # Must first "solve" for n, set up registers needed
+    # Based off of cited paper and QC Bootcamp 2's implementation of 
+    # Draper's adder circuit 
+
+    # "Solving" for n 
+    n = np.ceil(np.log2(N))
+
+    # Setting up Quantum Register 
+    quantum_register = QuantumRegister(size=n, name ='x')
+    phi_add_a = QuantumCircuit(quantum_register, name="phi add a")
+
+    # Placing built-in QFT in circuit 
+    phi_add_a.QFT(n)
+    
+    #####
+
+    # Still need to sort this out 
+
+    #####
+    
+
+    # Ending circuit with inverse QFT
+    phi_add_a.QFT(n, inverse=True)
     pass
 
 def cc_adder_mod(a: int, N: int) -> QuantumCircuit:
