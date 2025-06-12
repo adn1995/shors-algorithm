@@ -44,26 +44,28 @@ def adder(a: int, N: int) -> QuantumCircuit:
     # Must first "solve" for n, set up registers needed
     # Based off of cited paper and QC Bootcamp 2's implementation of 
     # Draper's adder circuit 
+    # and class lecture on 22 May 2025
+
+    # We utilize the corollary that relates the QFT, A_k (Draper), 
+    # and this (controlled) phase gate P_n(a) (phiADD(a)) 
 
     # "Solving" for n 
-    n = np.ceil(np.log2(N))
+    n = int(np.ceil(np.log2(N)))
 
     # Setting up Quantum Register 
     quantum_register = QuantumRegister(size=n, name ='x')
     phi_add_a = QuantumCircuit(quantum_register, name="phi add a")
 
-    # Placing built-in QFT in circuit 
-    phi_add_a.QFT(n)
-    
-    #####
-
-    # Still need to sort this out 
-
-    #####
+    # Building P_n(a) by making a phase gate p
+    # for each qubit 
+    for idx, q in enumerate(reversed(quantum_register)):
+        phi_add_a.p(np.pi * a / (1 << idx), q)
     
 
-    # Ending circuit with inverse QFT
-    phi_add_a.QFT(n, inverse=True)
+    #####
+    
+
+    
     pass
 
 def cc_adder_mod(a: int, N: int) -> QuantumCircuit:
