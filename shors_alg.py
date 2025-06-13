@@ -39,6 +39,8 @@ def oracle(a: int, N: int) -> QuantumCircuit:
 # Subcircuits
 ########################################################################
 
+# Adder and Subtractor
+##############
 def adder(a: int, N: int) -> QuantumCircuit:
     #TODO see Section 2.1 and Figure 3
     # Must first "solve" for n, set up registers needed
@@ -62,6 +64,25 @@ def adder(a: int, N: int) -> QuantumCircuit:
 
     return phi_add_a
 
+def subtractor(a: int, N: int) -> QuantumCircuit:
+    #TODO see Section 2.2, used in figure 5's construction
+
+    # "Solving" for n, necessary to determine number of qubits 
+    n = int(np.ceil(np.log2(N)))
+
+    # Setting up Quantum Register 
+    quantum_register = QuantumRegister(size=n, name ='x')
+    phi_sub_a = QuantumCircuit(quantum_register, name="phi_sub_a")
+
+    # Building rev(P_n(a)) by making a phase gate p
+    # for each qubit 
+    for idx, q in enumerate(reversed(quantum_register)):
+        phi_sub_a.p(np.pi * -a / (1 << idx), q)
+
+    return phi_sub_a
+
+# Doubly-cntrolled adder mod N
+#################
 
 def cc_adder_mod(a: int, N: int) -> QuantumCircuit:
     #TODO doubly controlled, see Section 2.2 and Figure 5
