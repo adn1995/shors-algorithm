@@ -3,6 +3,7 @@
 
 from qiskit.circuit import QuantumCircuit, QuantumRegister, AncillaRegister
 from qiskit.quantum_info import Statevector
+from qiskit.circuit.library import QFT
 #import matplotlib.pyplot as plt
 
 import math
@@ -118,7 +119,46 @@ def c_mult_mod(a: int, N: int) -> QuantumCircuit:
             |c> |x> |b+a*x mod N>   if c==1
     """
     # See Section 2.3 and Figure 6 of N&C
-    pass
+
+    # Number of bits required to represent N
+    n = math.ceil(math.log2(N))
+
+    # One control qubit
+    control_qr = QuantumRegister(1, name="c")
+
+    # n qubits for |x>, the n-qubit input for CMULT(a)MOD(N)
+    input1_qr = QuantumRegister(n, name="x")
+
+    # n+1 qubits for |b>
+    # Even though b is an n-bit number, we need n+1 qubits
+    # to account for overflow
+    input2_qr = QuantumRegister(n+1, name="b")
+
+    # 1 ancilla qubit used by modular adder
+    ancilla = AncillaRegister(1, name="a")
+
+    qc = QuantumCircuit(control_qr, input1_qr, input2_qr, ancilla,
+                        name="CMULT({})MOD({})".format(str(a),str(N)))
+
+    # QFT circuit for n+1 qubit register
+    qft = QFT(n+1)
+
+    # Apply QFT to |b> register
+    qc.compose(qft.to_gate(), input2_qr, inplace=True)
+
+    # n doubly-controlled modular adders
+    for i in range(n):
+        qc.compose(cc_adder_mod((2**i)*a, N).to_gate(),
+                    qubits=[control_qr,
+                        input1_qr[i],
+                        *input2_qr,
+                        ancilla],
+                    inplace=True)
+
+    # Apply inverse QFT to |b> register
+    qc.compose(qft.inverse().to_gate(), input2_qr, inplace=True)
+
+    return qc
 
 ########################################################################
 # Other helper functions
