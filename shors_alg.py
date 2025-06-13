@@ -17,16 +17,16 @@ def oracle(a: int, N: int) -> QuantumCircuit:
     Parameters
     ----------
     a : int
-        Positive integer
+        Positive integer strictly less than `N`
     N : int
-        Positive integer strictly greater than `a`
+        Positive integer, which Shor's algorithm factors
 
     Returns
     -------
     QuantumCircuit
         Unitary operator U given by
             U |c>_1 |x>_n =
-                |c>_1 |a*x mod N>_n if c=1 and x<N
+                |c>_1 |a*x mod N>_n if c==1 and x<N
                 |c>_1 |x>_n         otherwise
         where n = ceil(log2(N))
     """
@@ -97,7 +97,27 @@ def cc_adder_mod(a: int, N: int) -> QuantumCircuit:
     pass
 
 def c_mult_mod(a: int, N: int) -> QuantumCircuit:
-    #TODO controlled, see Section 2.3 and Figure 6
+    """Returns the CMULT(a)MOD(N) circuit.
+
+    Parameters
+    ----------
+    a : int
+        Positive integer strictly less than `N`
+    N : int
+        Positive integer, which Shor's algorithm factors
+
+    Returns
+    -------
+    QuantumCircuit
+        Controlled multiplier circuit that takes 3 inputs
+            |c>_1     control qubit
+            |x>_n
+            |b>_n
+        with the output
+            |c> |x> |b>             if c==0
+            |c> |x> |b+a*x mod N>   if c==1
+    """
+    # See Section 2.3 and Figure 6 of N&C
     pass
 
 ########################################################################
