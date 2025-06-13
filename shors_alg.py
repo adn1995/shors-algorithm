@@ -24,16 +24,18 @@ def oracle(a: int, N: int) -> QuantumCircuit:
     Returns
     -------
     QuantumCircuit
-        Controlled circuit CU_a given by
-            CU_a |c>_1 |x>_n
-        that returns |c>_1 |a*x mod N>_n when c=1,
+        Unitary operator U given by
+            U |c>_1 |x>_n =
+                |c>_1 |a*x mod N>_n if c=1 and x<N
+                |c>_1 |x>_n         otherwise
         where n = ceil(log2(N))
     """
-    #TODO see Figure 7
-    #TODO don't forget to use to_gate() when composing subcircuits
+    # See Figure 7 of N&C
 
     # Number of bits required to represent N
     n = math.ceil(math.log2(N))
+
+    # TODO/WARNING: THIS FUNCTION SHOULD CHECK IF x < N
 
     # One control qubit
     control_qr = QuantumRegister(1, name="c")
