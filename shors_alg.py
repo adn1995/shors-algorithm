@@ -78,8 +78,7 @@ def oracle(a: int, N: int) -> QuantumCircuit:
             target_qubit2=ancilla[i+1])
 
     # Inverse controlled multiplier
-
-    qc.compose(c_mult_mod(a,N).inverse().to_gate(),
+    qc.compose(c_mult_mod_inv(a,N).to_gate(),
                 qubits=[control_qr, input_qr, ancilla],
                 inplace=True)
 
@@ -94,11 +93,11 @@ def oracle(a: int, N: int) -> QuantumCircuit:
 def adder(a: int, N: int) -> QuantumCircuit:
     #TODO see Section 2.1 and Figure 3
     # Must first "solve" for n, set up registers needed
-    # Based off of cited paper, QC Bootcamp Problem Session 2's implementation of 
+    # Based off of cited paper, QC Bootcamp Problem Session 2's implementation of
     # Draper's adder circuit, and class lecture on 22 May 2025
 
-    # We utilize the corollary that relates the QFT, A_k (Draper), 
-    # and this (controlled) phase gate P_n(a) (phiADD(a)) 
+    # We utilize the corollary that relates the QFT, A_k (Draper),
+    # and this (controlled) phase gate P_n(a) (phiADD(a))
 
     # "Solving" for n 
     n = math.ceil(math.log2(N))
@@ -108,9 +107,9 @@ def adder(a: int, N: int) -> QuantumCircuit:
     phi_add_a = QuantumCircuit(quantum_register, name="phi_add_a")
 
     # Building P_n(a) by making a phase gate p
-    # for each qubit 
+    # for each qubit
     for idx, q in enumerate(reversed(quantum_register)):
-        phi_add_a.p(np.pi * a / (1 << idx), q)
+        phi_add_a.p(math.pi * a / (1 << idx), q)
 
     return phi_add_a
 
@@ -342,6 +341,77 @@ def adder_mod(a: int, N: int) -> QuantumCircuit:
 ##########################
     
 
+def cc_adder_mod_inv(a: int, N: int) -> QuantumCircuit:
+    """Returns the inverse of the doubly controlled modular adder
+    circuit.
+
+    Parameters
+    ----------
+    a : int
+        Positive integer strictly less than `N`
+    N : int
+        Positive integer, which Shor's algorithm factors
+
+    Returns
+    -------
+    QuantumCircuit
+    """
+    # Number of bits required to represent N
+    n = math.ceil(math.log2(N))
+
+    # Two control qubits
+    control_qr = QuantumRegister(2, name="c")
+
+    # n+1 qubits for |phi(b)>
+    # Even though b is an n-bit number, we need n+1 qubits
+    # to account for overflow
+    input_qr = QuantumRegister(n+1, name="phi(b)")
+
+    # 1 ancilla qubit
+    ancilla = AncillaRegister(1, name="a")
+
+    qc = QuantumCircuit(control_qr, input_qr, ancilla,
+                        name="CCphi({})MOD({})inv".format(str(a),str(N)))
+
+    # QFT circuit for n+1 qubit register
+    qft = QFT(n+1)
+
+    qc.compose(cc_subtractor(a,N),
+                qubits=[*control_qr, *input_qr],
+                inplace=True)
+
+    qc.compose(qft.inverse().to_gate(), input_qr, inplace=True)
+
+    qc.x(input_qr[n])
+
+    qc.cx(input_qr[n], ancilla)
+
+    qc.x(input_qr[n])
+
+    qc.compose(qft.to_gate(), input_qr, inplace=True)
+
+    qc.compose(cc_adder(a,N),
+                qubits=[*control_qr, *input_qr],
+                inplace=True)
+
+    qc.compose(c_subtractor(N,N),
+            qubits=[ancilla, input_qr[n]],
+            inplace=True)
+
+    qc.compose(qft.inverse().to_gate(), input_qr, inplace=True)
+
+    qc.cx(input_qr[n], ancilla)
+
+    qc.compose(qft.to_gate(), input_qr, inplace=True)
+
+    qc.compose(adder(N,N), input_qr, inplace=True)
+
+    qc.compose(cc_subtractor(a,N),
+                qubits=[*control_qr, *input_qr],
+                inplace=True)
+
+    return qc
+
 def c_mult_mod(a: int, N: int) -> QuantumCircuit:
     """Returns the CMULT(a)MOD(N) circuit.
 
@@ -396,6 +466,60 @@ def c_mult_mod(a: int, N: int) -> QuantumCircuit:
         qc.compose(cc_adder_mod((2**i)*a, N).to_gate(),
                     qubits=[control_qr,
                         input1_qr[i],
+                        *input2_qr,
+                        ancilla],
+                    inplace=True)
+
+    # Apply inverse QFT to |b> register
+    qc.compose(qft.inverse().to_gate(), input2_qr, inplace=True)
+
+    return qc
+
+def c_mult_mod_inv(a: int, N: int) -> QuantumCircuit:
+    """Returns the inverse of the CMULT(a)MOD(N) circuit.
+
+    Parameters
+    ----------
+    a : int
+        Positive integer strictly less than `N`
+    N : int
+        Positive integer, which Shor's algorithm factors
+
+    Returns
+    -------
+    QuantumCircuit
+    """
+    # Number of bits required to represent N
+    n = math.ceil(math.log2(N))
+
+    # One control qubit
+    control_qr = QuantumRegister(1, name="c")
+
+    # n qubits for |x>, the n-qubit input for CMULT(a)MOD(N)
+    input1_qr = QuantumRegister(n, name="x")
+
+    # n+1 qubits for |b>
+    # Even though b is an n-bit number, we need n+1 qubits
+    # to account for overflow
+    input2_qr = QuantumRegister(n+1, name="b")
+
+    # 1 ancilla qubit used by modular adder
+    ancilla = AncillaRegister(1, name="a")
+
+    qc = QuantumCircuit(control_qr, input1_qr, input2_qr, ancilla,
+                        name="CMULT({})MOD({})".format(str(a),str(N)))
+
+    # QFT circuit for n+1 qubit register
+    qft = QFT(n+1)
+
+    # Apply QFT to |b> register
+    qc.compose(qft.to_gate(), input2_qr, inplace=True)
+
+    # n inverses of doubly-controlled modular adder
+    for i in range(n):
+        qc.compose(cc_adder_mod_inv((2**(n-1-i))*a, N).to_gate(),
+                    qubits=[control_qr,
+                        input1_qr[n-1-i],
                         *input2_qr,
                         ancilla],
                     inplace=True)
