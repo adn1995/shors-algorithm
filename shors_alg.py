@@ -117,7 +117,75 @@ def cc_adder_mod(a: int, N: int) -> QuantumCircuit:
     pass
 
 def cc_adder_mod_inv(a: int, N: int) -> QuantumCircuit:
-    pass
+    """Returns the inverse of the doubly controlled modular adder
+    circuit.
+
+    Parameters
+    ----------
+    a : int
+        Positive integer strictly less than `N`
+    N : int
+        Positive integer, which Shor's algorithm factors
+
+    Returns
+    -------
+    QuantumCircuit
+    """
+    # Number of bits required to represent N
+    n = math.ceil(math.log2(N))
+
+    # Two control qubits
+    control_qr = QuantumRegister(2, name="c")
+
+    # n+1 qubits for |phi(b)>
+    # Even though b is an n-bit number, we need n+1 qubits
+    # to account for overflow
+    input_qr = QuantumRegister(n+1, name="phi(b)")
+
+    # 1 ancilla qubit
+    ancilla = AncillaRegister(1, name="a")
+
+    qc = QuantumCircuit(control_qr, input_qr, ancilla,
+                        name="CCphi({})MOD({})inv".format(str(a),str(N)))
+
+    # QFT circuit for n+1 qubit register
+    qft = QFT(n+1)
+
+    qc.compose(cc_subtractor(a,N),
+                qubits=[*control_qr, *input_qr],
+                inplace=True)
+
+    qc.compose(qft.inverse().to_gate(), input_qr, inplace=True)
+
+    qc.x(input_qr[n])
+
+    qc.cx(input_qr[n], ancilla)
+
+    qc.x(input_qr[n])
+
+    qc.compose(qft.to_gate(), input_qr, inplace=True)
+
+    qc.compose(cc_adder(a,N),
+                qubits=[*control_qr, *input_qr],
+                inplace=True)
+
+    qc.compose(c_subtractor(N,N),
+            qubits=[ancilla, input_qr[n]],
+            inplace=True)
+
+    qc.compose(qft.inverse().to_gate(), input_qr, inplace=True)
+
+    qc.cx(input_qr[n], ancilla)
+
+    qc.compose(qft.to_gate(), input_qr, inplace=True)
+
+    qc.compose(adder(N,N), input_qr, inplace=True)
+
+    qc.compose(cc_subtractor(a,N),
+                qubits=[*control_qr, *input_qr],
+                inplace=True)
+
+    return qc
 
 def c_mult_mod(a: int, N: int) -> QuantumCircuit:
     """Returns the CMULT(a)MOD(N) circuit.
