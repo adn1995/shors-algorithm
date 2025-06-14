@@ -78,8 +78,7 @@ def oracle(a: int, N: int) -> QuantumCircuit:
             target_qubit2=ancilla[i+1])
 
     # Inverse controlled multiplier
-
-    qc.compose(c_mult_mod(a,N).inverse().to_gate(),
+    qc.compose(c_mult_mod_inv(a,N).to_gate(),
                 qubits=[control_qr, input_qr, ancilla],
                 inplace=True)
 
@@ -115,6 +114,9 @@ def adder(a: int, N: int) -> QuantumCircuit:
 
 def cc_adder_mod(a: int, N: int) -> QuantumCircuit:
     #TODO doubly controlled, see Section 2.2 and Figure 5
+    pass
+
+def cc_adder_mod_inv(a: int, N: int) -> QuantumCircuit:
     pass
 
 def c_mult_mod(a: int, N: int) -> QuantumCircuit:
@@ -179,6 +181,22 @@ def c_mult_mod(a: int, N: int) -> QuantumCircuit:
     qc.compose(qft.inverse().to_gate(), input2_qr, inplace=True)
 
     return qc
+
+def c_mult_mod_inv(a: int, N: int) -> QuantumCircuit:
+    """Returns the inverse of the CMULT(a)MOD(N) circuit.
+
+    Parameters
+    ----------
+    a : int
+        Positive integer strictly less than `N`
+    N : int
+        Positive integer, which Shor's algorithm factors
+
+    Returns
+    -------
+    QuantumCircuit
+    """
+    pass
 
 ########################################################################
 # Other helper functions
