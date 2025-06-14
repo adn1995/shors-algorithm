@@ -54,7 +54,7 @@ def adder(a: int, N: int) -> QuantumCircuit:
     n = math.ceil(math.log2(N))
 
     # Setting up Quantum Register 
-    quantum_register = QuantumRegister(size=n, name ='x')
+    quantum_register = QuantumRegister(size=n+1, name ='x')
     phi_add_a = QuantumCircuit(quantum_register, name="phi_add_a")
 
     # Building P_n(a) by making a phase gate p
@@ -71,7 +71,7 @@ def subtractor(a: int, N: int) -> QuantumCircuit:
     n = math.ceil(math.log2(N))
 
     # Setting up Quantum Register 
-    quantum_register = QuantumRegister(size=n, name ='x')
+    quantum_register = QuantumRegister(size=n+1, name ='x')
     phi_sub_a = QuantumCircuit(quantum_register, name="phi_sub_a")
 
     # Building rev(P_n(a)) by making a phase gate p
@@ -96,7 +96,7 @@ def c_adder(a: int, N: int) -> QuantumCircuit:
     # Setting up Quantum Registers
     control_register = QuantumRegister(size=2, name='c')
     # This is the register where most of the work happens
-    phi_b_register = QuantumRegister(size=n, name='phi(b)')
+    phi_b_register = QuantumRegister(size=n+1, name='phi(b)')
 
     # This register is for the extra qubit required
     # Naming to avoid confusion with the function input, a
@@ -123,7 +123,7 @@ def c_subtractor(a: int, N: int) -> QuantumCircuit:
     # Setting up Quantum Registers
     control_register = QuantumRegister(size=2, name='c')
     # This is the register where most of the work happens
-    phi_b_register = QuantumRegister(size=n, name='phi(b)')
+    phi_b_register = QuantumRegister(size=n+1, name='phi(b)')
 
     # This register is for the extra qubit required
     # Naming to avoid confusion with the function input, a
@@ -135,7 +135,7 @@ def c_subtractor(a: int, N: int) -> QuantumCircuit:
     # Building cc_P_n(a) by making a phase gate p
     # for each qubit 
     for idx, q in enumerate((phi_b_register)):
-        c_phi_sub_a.cp(np.pi * -a / (2**(n-1-idx)), zero_register[0], q)
+        c_phi_sub_a.cp(np.pi * -a / (2**(n-idx)), zero_register[0], q)
 
     return c_phi_sub_a
 
@@ -154,7 +154,7 @@ def cc_adder(a: int, N: int) -> QuantumCircuit:
     # Setting up Quantum Registers
     control_register = QuantumRegister(size=2, name='c')
     # This is the register where most of the work happens
-    phi_b_register = QuantumRegister(size=n, name='phi(b)')
+    phi_b_register = QuantumRegister(size=n+1, name='phi(b)')
     # This register is for the extra qubit required
     # Naming to avoid confusion with the function input, a
     zero_register = AncillaRegister(size=1, name="zero")
@@ -180,7 +180,7 @@ def cc_subtractor(a: int, N: int) -> QuantumCircuit:
     # Setting up Quantum Registers
     control_register = QuantumRegister(size=2, name='c')
     # This is the register where most of the work happens
-    phi_b_register = QuantumRegister(size=n, name='phi(b)')
+    phi_b_register = QuantumRegister(size=n+1, name='phi(b)')
     # This register is for the extra qubit required
     # Naming to avoid confusion with the function input, a
     zero_register = AncillaRegister(size=1, name="zero")
@@ -191,7 +191,7 @@ def cc_subtractor(a: int, N: int) -> QuantumCircuit:
     # Building cc_P_n(a) by making a phase gate p
     # for each qubit 
     for idx, q in enumerate((phi_b_register)):
-        cc_phi_sub_a.cp(np.pi * -a / (2**(n-1-idx)), control_register[:], q)
+        cc_phi_sub_a.cp(np.pi * -a / (2**(n-idx)), control_register[:], q)
 
     return cc_phi_sub_a
 
@@ -209,7 +209,7 @@ def adder_mod(a: int, N: int) -> QuantumCircuit:
     # Makking the control register, which requires two qubits
     control_register = QuantumRegister(size=2, name='c')
     # This is the register where most of the work happens
-    phi_b_register = QuantumRegister(size=n, name='phi(b)')
+    phi_b_register = QuantumRegister(size=n+1, name='phi(b)')
     # This register is for the extra qubit required
     # Naming to avoid confusion with the function input, a
     zero_register = AncillaRegister(size=1, name="zero")
@@ -232,17 +232,17 @@ def adder_mod(a: int, N: int) -> QuantumCircuit:
     adder_mod_N.barrier()
 
     # gate 3/13 qft_inv
-    adder_mod_N.compose(QFT(n).inverse(), phi_b_register[:], inplace=True)
+    adder_mod_N.compose(QFT(n+1).inverse(), phi_b_register[:], inplace=True)
 
     adder_mod_N.barrier()
 
     # gate 4/13 controlled NOT (.cx)
-    adder_mod_N.cx(phi_b_register[n-1], zero_register[0])
+    adder_mod_N.cx(phi_b_register[n], zero_register[0])
 
     adder_mod_N.barrier()
 
     # gate 5/13 qft
-    adder_mod_N.compose(QFT(n), phi_b_register[:], inplace=True)
+    adder_mod_N.compose(QFT(n+1), phi_b_register[:], inplace=True)
 
     adder_mod_N.barrier()
 
@@ -259,27 +259,27 @@ def adder_mod(a: int, N: int) -> QuantumCircuit:
     adder_mod_N.barrier()
 
     # gate 8/13 qft inverse on phi_b
-    adder_mod_N.compose(QFT(n).inverse(), phi_b_register[:], inplace=True)
+    adder_mod_N.compose(QFT(n+1).inverse(), phi_b_register[:], inplace=True)
 
     adder_mod_N.barrier()
 
     # gate 9/13 NOT (aka x)
-    adder_mod_N.x(phi_b_register[n-1])
+    adder_mod_N.x(phi_b_register[n])
 
     adder_mod_N.barrier()
 
     # gate 10/13 controlled NOT (cx)
-    adder_mod_N.cx(phi_b_register[n-1], zero_register[0])
+    adder_mod_N.cx(phi_b_register[n], zero_register[0])
 
     adder_mod_N.barrier()
 
     # gate 11/13 NOT (aka X)
-    adder_mod_N.x(phi_b_register[n-1])
+    adder_mod_N.x(phi_b_register[n])
 
     adder_mod_N.barrier()
 
     # gate 12/13 qft 
-    adder_mod_N.compose(QFT(n), phi_b_register[:], inplace=True)
+    adder_mod_N.compose(QFT(n+1), phi_b_register[:], inplace=True)
 
     adder_mod_N.barrier()
 
