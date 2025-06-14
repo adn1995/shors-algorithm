@@ -92,23 +92,23 @@ def oracle(a: int, N: int) -> QuantumCircuit:
 def adder(a: int, N: int) -> QuantumCircuit:
     #TODO see Section 2.1 and Figure 3
     # Must first "solve" for n, set up registers needed
-    # Based off of cited paper, QC Bootcamp Problem Session 2's implementation of 
+    # Based off of cited paper, QC Bootcamp Problem Session 2's implementation of
     # Draper's adder circuit, and class lecture on 22 May 2025
 
-    # We utilize the corollary that relates the QFT, A_k (Draper), 
-    # and this (controlled) phase gate P_n(a) (phiADD(a)) 
+    # We utilize the corollary that relates the QFT, A_k (Draper),
+    # and this (controlled) phase gate P_n(a) (phiADD(a))
 
-    # "Solving" for n 
-    n = int(np.ceil(np.log2(N)))
+    # "Solving" for n
+    n = math.ceil(math.log2(N))
 
-    # Setting up Quantum Register 
+    # Setting up Quantum Register
     quantum_register = QuantumRegister(size=n, name ='x')
     phi_add_a = QuantumCircuit(quantum_register, name="phi_add_a")
 
     # Building P_n(a) by making a phase gate p
-    # for each qubit 
+    # for each qubit
     for idx, q in enumerate(reversed(quantum_register)):
-        phi_add_a.p(np.pi * a / (1 << idx), q)
+        phi_add_a.p(math.pi * a / (1 << idx), q)
 
     return phi_add_a
 
