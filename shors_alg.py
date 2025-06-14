@@ -99,10 +99,10 @@ def adder(a: int, N: int) -> QuantumCircuit:
     # We utilize the corollary that relates the QFT, A_k (Draper),
     # and this (controlled) phase gate P_n(a) (phiADD(a))
 
-    # "Solving" for n 
+    # "Solving" for n
     n = math.ceil(math.log2(N))
 
-    # Setting up Quantum Register 
+    # Setting up Quantum Register
     quantum_register = QuantumRegister(size=n+1, name ='x')
     phi_add_a = QuantumCircuit(quantum_register, name="phi_add_a")
 
@@ -116,21 +116,21 @@ def adder(a: int, N: int) -> QuantumCircuit:
 def subtractor(a: int, N: int) -> QuantumCircuit:
     #TODO see Section 2.2, used in figure 5's construction
 
-    # "Solving" for n, necessary to determine number of qubits 
+    # "Solving" for n, necessary to determine number of qubits
     n = math.ceil(math.log2(N))
 
-    # Setting up Quantum Register 
+    # Setting up Quantum Register
     quantum_register = QuantumRegister(size=n+1, name ='x')
     phi_sub_a = QuantumCircuit(quantum_register, name="phi_sub_a")
 
     # Building rev(P_n(a)) by making a phase gate p
-    # for each qubit 
+    # for each qubit
     for idx, q in enumerate(reversed(quantum_register)):
-        phi_sub_a.p(np.pi * -a / (1 << idx), q)
+        phi_sub_a.p(math.pi * -a / (1 << idx), q)
 
     return phi_sub_a
 
-# Controlled adder and subtractor 
+# Controlled adder and subtractor
 # Needed to Build Modular Adder Gate
 #################
 
@@ -139,7 +139,7 @@ def c_adder(a: int, N: int) -> QuantumCircuit:
     #TODO see Section 2.1 and Figure 3
     # Must first "solve" for n, set up registers needed
 
-    # "Solving" for n, necessary to determine number of qubits 
+    # "Solving" for n, necessary to determine number of qubits
     n = math.ceil(math.log2(N))
 
     # Setting up Quantum Registers
@@ -151,13 +151,13 @@ def c_adder(a: int, N: int) -> QuantumCircuit:
     # Naming to avoid confusion with the function input, a
     zero_register = AncillaRegister(size=1, name="zero")
 
-    # Setting up the circuit 
+    # Setting up the circuit
     c_phi_add_a = QuantumCircuit(control_register, phi_b_register, zero_register, name='cc_phi_add_a')
 
     # Building cc_P_n(a) by making a phase gate p
-    # for each qubit 
+    # for each qubit
     for idx, q in enumerate(reversed(phi_b_register)):
-        c_phi_add_a.cp(np.pi * a / (1 << idx), zero_register[0], q)
+        c_phi_add_a.cp(math.pi * a / (1 << idx), zero_register[0], q)
 
     return c_phi_add_a
 
@@ -166,7 +166,7 @@ def c_subtractor(a: int, N: int) -> QuantumCircuit:
     #TODO see Section 2.1 and Figure 3
     # Must first "solve" for n, set up registers needed
 
-    # "Solving" for n, necessary to determine number of qubits 
+    # "Solving" for n, necessary to determine number of qubits
     n = math.ceil(math.log2(N))
 
     # Setting up Quantum Registers
@@ -178,17 +178,17 @@ def c_subtractor(a: int, N: int) -> QuantumCircuit:
     # Naming to avoid confusion with the function input, a
     zero_register = AncillaRegister(size=1, name="zero")
 
-    # Setting up the circuit 
+    # Setting up the circuit
     c_phi_sub_a = QuantumCircuit(control_register, phi_b_register, zero_register, name='cc_phi_add_a')
 
     # Building cc_P_n(a) by making a phase gate p
-    # for each qubit 
+    # for each qubit
     for idx, q in enumerate((phi_b_register)):
-        c_phi_sub_a.cp(np.pi * -a / (2**(n-idx)), zero_register[0], q)
+        c_phi_sub_a.cp(math.pi * -a / (2**(n-idx)), zero_register[0], q)
 
     return c_phi_sub_a
 
-# Doubly-controlled adder and subtractor 
+# Doubly-controlled adder and subtractor
 # Needed to Build Modular Adder Gate
 #################
 
@@ -197,7 +197,7 @@ def cc_adder(a: int, N: int) -> QuantumCircuit:
     #TODO see Section 2.1 and Figure 3
     # Must first "solve" for n, set up registers needed
 
-    # "Solving" for n, necessary to determine number of qubits 
+    # "Solving" for n, necessary to determine number of qubits
     n = math.ceil(math.log2(N))
 
     # Setting up Quantum Registers
@@ -208,22 +208,22 @@ def cc_adder(a: int, N: int) -> QuantumCircuit:
     # Naming to avoid confusion with the function input, a
     zero_register = AncillaRegister(size=1, name="zero")
 
-    # Setting up the circuit 
+    # Setting up the circuit
     cc_phi_add_a = QuantumCircuit(control_register, phi_b_register, zero_register, name='cc_phi_add_a')
 
     # Building cc_P_n(a) by making a phase gate p
-    # for each qubit 
+    # for each qubit
     for idx, q in enumerate(reversed(phi_b_register)):
-        cc_phi_add_a.mcp(np.pi * a / (1 << idx), control_register[:], q)
+        cc_phi_add_a.mcp(math.pi * a / (1 << idx), control_register[:], q)
 
     return cc_phi_add_a
 
-# cc subtractor gate 
+# cc subtractor gate
 def cc_subtractor(a: int, N: int) -> QuantumCircuit:
     #TODO see Section 2.1 and Figure 3
     # Must first "solve" for n, set up registers needed
 
-    # "Solving" for n, necessary to determine number of qubits 
+    # "Solving" for n, necessary to determine number of qubits
     n = math.ceil(math.log2(N))
 
     # Setting up Quantum Registers
@@ -234,25 +234,25 @@ def cc_subtractor(a: int, N: int) -> QuantumCircuit:
     # Naming to avoid confusion with the function input, a
     zero_register = AncillaRegister(size=1, name="zero")
 
-    # Setting up the circuit 
+    # Setting up the circuit
     cc_phi_sub_a = QuantumCircuit(control_register, phi_b_register, zero_register, name='cc_phi_add_a')
 
     # Building cc_P_n(a) by making a phase gate p
-    # for each qubit 
+    # for each qubit
     for idx, q in enumerate((phi_b_register)):
-        cc_phi_sub_a.cp(np.pi * -a / (2**(n-idx)), control_register[:], q)
+        cc_phi_sub_a.cp(math.pi * -a / (2**(n-idx)), control_register[:], q)
 
     return cc_phi_sub_a
 
 
 
 def cc_adder_mod(a: int, N: int) -> QuantumCircuit:
-    # Copying outline of code from our .py file 
+    # Copying outline of code from our .py file
 
 def adder_mod(a: int, N: int) -> QuantumCircuit:
     #TODO doubly controlled, see Section 2.2 and Figure 5
-   
-   # "Solving" for n, necessary to determine number of qubits 
+
+   # "Solving" for n, necessary to determine number of qubits
     n = math.ceil(math.log2(N))
 
     # Makking the control register, which requires two qubits
@@ -263,7 +263,7 @@ def adder_mod(a: int, N: int) -> QuantumCircuit:
     # Naming to avoid confusion with the function input, a
     zero_register = AncillaRegister(size=1, name="zero")
 
-    # Creating the actual circuit 
+    # Creating the actual circuit
     # naming it 'adder_mod_N'
     adder_mod_N = QuantumCircuit(control_register, phi_b_register, zero_register, name='cc_adder_mod_N')
 
@@ -295,7 +295,7 @@ def adder_mod(a: int, N: int) -> QuantumCircuit:
 
     adder_mod_N.barrier()
 
-    # gate 6/13 controlled adder with a = N 
+    # gate 6/13 controlled adder with a = N
     c_add_N = c_adder(N,N)
     adder_mod_N.compose(c_add_N, qubits=[*control_register[:], *phi_b_register[:], *zero_register[:]], inplace=True)
 
@@ -327,19 +327,19 @@ def adder_mod(a: int, N: int) -> QuantumCircuit:
 
     adder_mod_N.barrier()
 
-    # gate 12/13 qft 
+    # gate 12/13 qft
     adder_mod_N.compose(QFT(n+1), phi_b_register[:], inplace=True)
 
     adder_mod_N.barrier()
 
-    # gate 13/13 doubly controlled adder 
+    # gate 13/13 doubly controlled adder
     cc_sub_a = cc_subtractor(a,N)
     adder_mod_N.compose(cc_sub_a, qubits=[*control_register[:], *phi_b_register[:], *zero_register[:]], inplace=True
 
     return adder_mod_N
 
 ##########################
-    
+
 
 def cc_adder_mod_inv(a: int, N: int) -> QuantumCircuit:
     """Returns the inverse of the doubly controlled modular adder
