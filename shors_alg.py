@@ -1,5 +1,11 @@
 # filename: shors_alg.py
 # authors: Amanda Curtis and Arthur Diep-Nguyen
+"""This module contains functions that construct quantum circuits used
+in Shor's algorithm.
+
+The implementations of these circuits come from the paper "Circuit for
+Shor's Algorithm using 2n+3 qubits" by Stephane Beauregard.
+"""
 
 from qiskit.circuit import QuantumCircuit, QuantumRegister, AncillaRegister
 from qiskit.circuit.library import QFT
