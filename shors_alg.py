@@ -220,7 +220,7 @@ def c_adder(a: int, N: int) -> QuantumCircuit:
     # Setting up the circuit
     c_phi_add_a = QuantumCircuit(control_register,
                                     phi_b_register,
-                                    name='cc_phi_add_a')
+                                    name='c_phi_add_a')
 
     # Building c_P_n(a) by making a phase gate p
     # for each qubit
@@ -263,7 +263,7 @@ def c_subtractor(a: int, N: int) -> QuantumCircuit:
     # Setting up the circuit
     c_phi_sub_a = QuantumCircuit(control_register,
                                     phi_b_register,
-                                    name='cc_phi_add_a')
+                                    name='c_phi_sub_a')
 
     # Building c_P_n(a) by making a phase gate p
     # for each qubit
@@ -354,7 +354,7 @@ def cc_subtractor(a: int, N: int) -> QuantumCircuit:
     # Setting up the circuit
     cc_phi_sub_a = QuantumCircuit(control_register,
                                     phi_b_register,
-                                    name='cc_phi_add_a')
+                                    name='cc_phi_sub_a')
 
     # Building cc_P_n(a) by making a phase gate p
     # for each qubit
