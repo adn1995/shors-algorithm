@@ -213,24 +213,19 @@ def c_adder(a: int, N: int) -> QuantumCircuit:
     n = math.ceil(math.log2(N))
 
     # Setting up Quantum Registers
-    control_register = QuantumRegister(size=2, name='c')
+    control_register = QuantumRegister(size=1, name='c')
     # This is the register where most of the work happens
     phi_b_register = QuantumRegister(size=n+1, name='phi(b)')
-
-    # This register is for the extra qubit required
-    # Naming to avoid confusion with the function input, a
-    zero_register = AncillaRegister(size=1, name="zero")
 
     # Setting up the circuit
     c_phi_add_a = QuantumCircuit(control_register,
                                     phi_b_register,
-                                    zero_register,
                                     name='cc_phi_add_a')
 
-    # Building cc_P_n(a) by making a phase gate p
+    # Building c_P_n(a) by making a phase gate p
     # for each qubit
     for idx, q in enumerate(reversed(phi_b_register)):
-        c_phi_add_a.cp(math.pi * a / (1 << idx), zero_register[0], q)
+        c_phi_add_a.cp(math.pi * a / (1 << idx), control_register, q)
 
     return c_phi_add_a
 
@@ -261,24 +256,19 @@ def c_subtractor(a: int, N: int) -> QuantumCircuit:
     n = math.ceil(math.log2(N))
 
     # Setting up Quantum Registers
-    control_register = QuantumRegister(size=2, name='c')
+    control_register = QuantumRegister(size=1, name='c')
     # This is the register where most of the work happens
     phi_b_register = QuantumRegister(size=n+1, name='phi(b)')
-
-    # This register is for the extra qubit required
-    # Naming to avoid confusion with the function input, a
-    zero_register = AncillaRegister(size=1, name="zero")
 
     # Setting up the circuit
     c_phi_sub_a = QuantumCircuit(control_register,
                                     phi_b_register,
-                                    zero_register,
                                     name='cc_phi_add_a')
 
-    # Building cc_P_n(a) by making a phase gate p
+    # Building c_P_n(a) by making a phase gate p
     # for each qubit
     for idx, q in enumerate((phi_b_register)):
-        c_phi_sub_a.cp(math.pi * -a / (2**(n-idx)), zero_register[0], q)
+        c_phi_sub_a.cp(math.pi * -a / (2**(n-idx)), control_register, q)
 
     return c_phi_sub_a
 
