@@ -60,7 +60,7 @@ def oracle(a: int, N: int) -> QuantumCircuit:
 
     # Controlled multiplier
     qc.compose(c_mult_mod(a,N).to_gate(),
-                qubits=[control_qr, input_qr, ancilla],
+                qubits=[*control_qr, *input_qr, *ancilla],
                 inplace=True)
 
 
@@ -86,7 +86,7 @@ def oracle(a: int, N: int) -> QuantumCircuit:
 
     # Inverse controlled multiplier
     qc.compose(c_mult_mod_inv(a,N).to_gate(),
-                qubits=[control_qr, input_qr, ancilla],
+                qubits=[*control_qr, *input_qr, *ancilla],
                 inplace=True)
 
     return qc
