@@ -307,14 +307,10 @@ def cc_adder(a: int, N: int) -> QuantumCircuit:
     control_register = QuantumRegister(size=2, name='c')
     # This is the register where most of the work happens
     phi_b_register = QuantumRegister(size=n+1, name='phi(b)')
-    # This register is for the extra qubit required
-    # Naming to avoid confusion with the function input, a
-    zero_register = AncillaRegister(size=1, name="zero")
 
     # Setting up the circuit
     cc_phi_add_a = QuantumCircuit(control_register,
                                     phi_b_register,
-                                    zero_register,
                                     name='cc_phi_add_a')
 
     # Building cc_P_n(a) by making a phase gate p
@@ -354,20 +350,16 @@ def cc_subtractor(a: int, N: int) -> QuantumCircuit:
     control_register = QuantumRegister(size=2, name='c')
     # This is the register where most of the work happens
     phi_b_register = QuantumRegister(size=n+1, name='phi(b)')
-    # This register is for the extra qubit required
-    # Naming to avoid confusion with the function input, a
-    zero_register = AncillaRegister(size=1, name="zero")
 
     # Setting up the circuit
     cc_phi_sub_a = QuantumCircuit(control_register,
                                     phi_b_register,
-                                    zero_register,
                                     name='cc_phi_add_a')
 
     # Building cc_P_n(a) by making a phase gate p
     # for each qubit
     for idx, q in enumerate((phi_b_register)):
-        cc_phi_sub_a.cp(math.pi * -a / (2**(n-idx)), control_register[:], q)
+        cc_phi_sub_a.mcp(math.pi * -a / (2**(n-idx)), control_register[:], q)
 
     return cc_phi_sub_a
 
