@@ -389,7 +389,7 @@ def cc_adder_mod(a: int, N: int) -> QuantumCircuit:
     # See Section 2.2 and Figure 5 of "Circuit for Shor's Algorithm
     # using 2n+3 qubits"
 
-   # "Solving" for n, necessary to determine number of qubits
+    # "Solving" for n, necessary to determine number of qubits
     n = math.ceil(math.log2(N))
 
     # Making the control register, which requires two qubits
@@ -419,27 +419,27 @@ def cc_adder_mod(a: int, N: int) -> QuantumCircuit:
                                 *phi_b_register[:]],
                         inplace=True)
 
-    adder_mod_N.barrier()
+    #adder_mod_N.barrier()
 
     # gate 2/13 inverse adder (aka subtractor) with a = N
     adder_mod_N.compose(sub_N, qubits=[*phi_b_register[:]], inplace=True)
 
-    adder_mod_N.barrier()
+    #adder_mod_N.barrier()
 
     # gate 3/13 qft_inv
     adder_mod_N.compose(QFT(n+1).inverse(), phi_b_register[:], inplace=True)
 
-    adder_mod_N.barrier()
+    #adder_mod_N.barrier()
 
     # gate 4/13 controlled NOT (.cx)
     adder_mod_N.cx(phi_b_register[n], zero_register[0])
 
-    adder_mod_N.barrier()
+    #adder_mod_N.barrier()
 
     # gate 5/13 qft
     adder_mod_N.compose(QFT(n+1), phi_b_register[:], inplace=True)
 
-    adder_mod_N.barrier()
+    #adder_mod_N.barrier()
 
     # gate 6/13 controlled adder with a = N
     adder_mod_N.compose(c_add_N,
@@ -447,7 +447,7 @@ def cc_adder_mod(a: int, N: int) -> QuantumCircuit:
                                 *phi_b_register[:]],
                         inplace=True)
 
-    adder_mod_N.barrier()
+    #adder_mod_N.barrier()
 
     # gate 7/13 doubly controlled adder inverse (aka doubly controlled
     # subtractor) for a
@@ -456,32 +456,32 @@ def cc_adder_mod(a: int, N: int) -> QuantumCircuit:
                                 *phi_b_register[:]],
                         inplace=True)
 
-    adder_mod_N.barrier()
+    #adder_mod_N.barrier()
 
     # gate 8/13 qft inverse on phi_b
     adder_mod_N.compose(QFT(n+1).inverse(), phi_b_register[:], inplace=True)
 
-    adder_mod_N.barrier()
+    #adder_mod_N.barrier()
 
     # gate 9/13 NOT (aka x)
     adder_mod_N.x(phi_b_register[n])
 
-    adder_mod_N.barrier()
+    #adder_mod_N.barrier()
 
     # gate 10/13 controlled NOT (cx)
     adder_mod_N.cx(phi_b_register[n], zero_register[0])
 
-    adder_mod_N.barrier()
+    #adder_mod_N.barrier()
 
     # gate 11/13 NOT (aka X)
     adder_mod_N.x(phi_b_register[n])
 
-    adder_mod_N.barrier()
+    #adder_mod_N.barrier()
 
     # gate 12/13 qft
     adder_mod_N.compose(QFT(n+1), phi_b_register[:], inplace=True)
 
-    adder_mod_N.barrier()
+    #adder_mod_N.barrier()
 
     # gate 13/13 doubly controlled adder
     adder_mod_N.compose(cc_sub_aN,
