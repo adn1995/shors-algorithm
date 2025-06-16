@@ -2,14 +2,15 @@
 # authors: Amanda Curtis and Arthur Diep-Nguyen
 
 from qiskit.circuit import QuantumCircuit, QuantumRegister, AncillaRegister
-from qiskit.quantum_info import Statevector
 from qiskit.circuit.library import QFT
 #import matplotlib.pyplot as plt
 
 import math
 
 ########################################################################
+########################################################################
 # Main oracle function
+########################################################################
 ########################################################################
 
 def oracle(a: int, N: int) -> QuantumCircuit:
@@ -31,7 +32,7 @@ def oracle(a: int, N: int) -> QuantumCircuit:
                 |c>_1 |x>_n         otherwise
         where n = ceil(log2(N))
     """
-    # See Figure 7 of N&C
+    # See Figure 7 of "Circuit for Shor's Algorithm using 2n+3 qubits"
 
     # Number of bits required to represent N
     n = math.ceil(math.log2(N))
@@ -85,16 +86,40 @@ def oracle(a: int, N: int) -> QuantumCircuit:
     return qc
 
 ########################################################################
+########################################################################
 # Subcircuits
 ########################################################################
+########################################################################
 
-# Adder and Subtractor
-##############
+########################################################################
+# Adder and subtractor
+########################################################################
+
 def adder(a: int, N: int) -> QuantumCircuit:
-    #TODO see Section 2.1 and Figure 3
+    """Returns the uncontrolled adder circuit.
+
+    Parameters
+    ----------
+    a : int
+        Positive integer strictly less than `N`
+    N : int
+        Positive integer, which Shor's algorithm factors
+
+    Returns
+    -------
+    QuantumCircuit
+        Unitary operator that takes in the state
+            |phi(b)>_(n+1)
+        and outputs the state
+            |phi(a+b)>_(n+1)
+    """
+    # See Section 2.1 and Figure 3 of "Circuit for Shor's Algorithm
+    # using 2n+3 qubits"
+
     # Must first "solve" for n, set up registers needed
-    # Based off of cited paper, QC Bootcamp Problem Session 2's implementation of
-    # Draper's adder circuit, and class lecture on 22 May 2025
+    # Based off of cited paper, QC Bootcamp Problem Session 2's
+    # implementation of Draper's adder circuit, and class lecture on
+    # 22 May 2025
 
     # We utilize the corollary that relates the QFT, A_k (Draper),
     # and this (controlled) phase gate P_n(a) (phiADD(a))
@@ -114,7 +139,27 @@ def adder(a: int, N: int) -> QuantumCircuit:
     return phi_add_a
 
 def subtractor(a: int, N: int) -> QuantumCircuit:
-    #TODO see Section 2.2, used in figure 5's construction
+    """Returns the uncontrolled subtractor circuit, i.e. the inverse
+    of the adder circuit.
+
+    Parameters
+    ----------
+    a : int
+        Positive integer strictly less than `N`
+    N : int
+        Positive integer, which Shor's algorithm factors
+
+    Returns
+    -------
+    QuantumCircuit
+        Unitary operator that takes in the state
+            |phi(b)>_(n+1)
+        and outputs the state
+            |phi(b-a)>_(n+1)
+    """
+    # See Section 2.2 of "Circuit for Shor's Algorithm using 2n+3
+    # qubits"
+    # Used in the construction of the modular adder from Figure 5
 
     # "Solving" for n, necessary to determine number of qubits
     n = math.ceil(math.log2(N))
@@ -130,13 +175,32 @@ def subtractor(a: int, N: int) -> QuantumCircuit:
 
     return phi_sub_a
 
-# Controlled adder and subtractor
-# Needed to Build Modular Adder Gate
-#################
+########################################################################
+# Singly-controlled adder and subtractor
+# Needed to build modular adder gate
+########################################################################
 
-# c adder gate
 def c_adder(a: int, N: int) -> QuantumCircuit:
-    #TODO see Section 2.1 and Figure 3
+    """Returns the singly-controlled adder circuit.
+
+    Parameters
+    ----------
+    a : int
+        Positive integer strictly less than `N`
+    N : int
+        Positive integer, which Shor's algorithm factors
+
+    Returns
+    -------
+    QuantumCircuit
+        Unitary operator that takes the input state
+            |c>_1 |phi(b)>_(n+1)
+        and outputs the state
+            |c>_1 |phi(a+b)>_(n+1)  if c==1
+            |c>_1 |phi(b)>_(n+1)    if c==0
+    """
+    # See Section 2.1 and Figure 3 of "Circuit for Shor's Algorithm
+    # using 2n+3 qubits"
     # Must first "solve" for n, set up registers needed
 
     # "Solving" for n, necessary to determine number of qubits
@@ -152,7 +216,10 @@ def c_adder(a: int, N: int) -> QuantumCircuit:
     zero_register = AncillaRegister(size=1, name="zero")
 
     # Setting up the circuit
-    c_phi_add_a = QuantumCircuit(control_register, phi_b_register, zero_register, name='cc_phi_add_a')
+    c_phi_add_a = QuantumCircuit(control_register,
+                                    phi_b_register,
+                                    zero_register,
+                                    name='cc_phi_add_a')
 
     # Building cc_P_n(a) by making a phase gate p
     # for each qubit
@@ -161,9 +228,27 @@ def c_adder(a: int, N: int) -> QuantumCircuit:
 
     return c_phi_add_a
 
-# c subtractor gate
 def c_subtractor(a: int, N: int) -> QuantumCircuit:
-    #TODO see Section 2.1 and Figure 3
+    """Returns the singly-controlled subtractor circuit.
+
+    Parameters
+    ----------
+    a : int
+        Positive integer strictly less than `N`
+    N : int
+        Positive integer, which Shor's algorithm factors
+
+    Returns
+    -------
+    QuantumCircuit
+        Unitary operator that takes the input state
+            |c>_1 |phi(b)>_(n+1)
+        and outputs the state
+            |c>_1 |phi(b-a)>_(n+1)  if c==1
+            |c>_1 |phi(b)>_(n+1)    if c==0
+    """
+    # See Section 2.1 and Figure 3 of "Circuit for Shor's Algorithm
+    # using 2n+3 qubits"
     # Must first "solve" for n, set up registers needed
 
     # "Solving" for n, necessary to determine number of qubits
@@ -179,7 +264,10 @@ def c_subtractor(a: int, N: int) -> QuantumCircuit:
     zero_register = AncillaRegister(size=1, name="zero")
 
     # Setting up the circuit
-    c_phi_sub_a = QuantumCircuit(control_register, phi_b_register, zero_register, name='cc_phi_add_a')
+    c_phi_sub_a = QuantumCircuit(control_register,
+                                    phi_b_register,
+                                    zero_register,
+                                    name='cc_phi_add_a')
 
     # Building cc_P_n(a) by making a phase gate p
     # for each qubit
@@ -188,13 +276,32 @@ def c_subtractor(a: int, N: int) -> QuantumCircuit:
 
     return c_phi_sub_a
 
+########################################################################
 # Doubly-controlled adder and subtractor
-# Needed to Build Modular Adder Gate
-#################
+# Needed to build modular adder gate
+########################################################################
 
-# cc adder gate
 def cc_adder(a: int, N: int) -> QuantumCircuit:
-    #TODO see Section 2.1 and Figure 3
+    """Returns the doubly-controlled adder circuit.
+
+    Parameters
+    ----------
+    a : int
+        Positive integer strictly less than `N`
+    N : int
+        Positive integer, which Shor's algorithm factors
+
+    Returns
+    -------
+    QuantumCircuit
+        Unitary operator that takes the input state
+            |c_1 c_2>_2 |phi(b)>_(n+1)
+        and outputs the state
+            |c_1 c_2>_2 |phi(a+b)>_(n+1)  if c_1==1 and c_2==1
+            |c_1 c_2>_2 |phi(b)>_(n+1)    if otherwise
+    """
+    # See Section 2.1 and Figure 3 of "Circuit for Shor's Algorithm
+    # using 2n+3 qubits"
     # Must first "solve" for n, set up registers needed
 
     # "Solving" for n, necessary to determine number of qubits
@@ -209,7 +316,10 @@ def cc_adder(a: int, N: int) -> QuantumCircuit:
     zero_register = AncillaRegister(size=1, name="zero")
 
     # Setting up the circuit
-    cc_phi_add_a = QuantumCircuit(control_register, phi_b_register, zero_register, name='cc_phi_add_a')
+    cc_phi_add_a = QuantumCircuit(control_register,
+                                    phi_b_register,
+                                    zero_register,
+                                    name='cc_phi_add_a')
 
     # Building cc_P_n(a) by making a phase gate p
     # for each qubit
@@ -218,9 +328,27 @@ def cc_adder(a: int, N: int) -> QuantumCircuit:
 
     return cc_phi_add_a
 
-# cc subtractor gate
 def cc_subtractor(a: int, N: int) -> QuantumCircuit:
-    #TODO see Section 2.1 and Figure 3
+    """Returns the doubly-controlled subtractor circuit.
+
+    Parameters
+    ----------
+    a : int
+        Positive integer strictly less than `N`
+    N : int
+        Positive integer, which Shor's algorithm factors
+
+    Returns
+    -------
+    QuantumCircuit
+        Unitary operator that takes the input state
+            |c_1 c_2>_2 |phi(b)>_(n+1)
+        and outputs the state
+            |c_1 c_2>_2 |phi(b-a)>_(n+1)  if c_1==1 and c_2==1
+            |c_1 c_2>_2 |phi(b)>_(n+1)    if otherwise
+    """
+    # See Section 2.1 and Figure 3 of "Circuit for Shor's Algorithm
+    # using 2n+3 qubits"
     # Must first "solve" for n, set up registers needed
 
     # "Solving" for n, necessary to determine number of qubits
@@ -235,7 +363,10 @@ def cc_subtractor(a: int, N: int) -> QuantumCircuit:
     zero_register = AncillaRegister(size=1, name="zero")
 
     # Setting up the circuit
-    cc_phi_sub_a = QuantumCircuit(control_register, phi_b_register, zero_register, name='cc_phi_add_a')
+    cc_phi_sub_a = QuantumCircuit(control_register,
+                                    phi_b_register,
+                                    zero_register,
+                                    name='cc_phi_add_a')
 
     # Building cc_P_n(a) by making a phase gate p
     # for each qubit
@@ -244,13 +375,31 @@ def cc_subtractor(a: int, N: int) -> QuantumCircuit:
 
     return cc_phi_sub_a
 
-
+########################################################################
+# Doubly-controlled modular adder (and its inverse)
+########################################################################
 
 def cc_adder_mod(a: int, N: int) -> QuantumCircuit:
-    # Copying outline of code from our .py file
+    """Returns the doubly-controlled modular adder circuit.
 
-def adder_mod(a: int, N: int) -> QuantumCircuit:
-    #TODO doubly controlled, see Section 2.2 and Figure 5
+    Parameters
+    ----------
+    a : int
+        Positive integer strictly less than `N`
+    N : int
+        Positive integer, which Shor's algorithm factors
+
+    Returns
+    -------
+    QuantumCircuit
+        Unitary operator that takes the input state
+            |c_1 c_2>_2 |phi(b)>_(n+1)
+        and outputs the state
+            |c_1 c_2>_2 |phi(a+b) mod N>_(n+1)  if c_1==1 and c_2==1
+            |c_1 c_2>_2 |phi(b)>_(n+1)          otherwise
+    """
+    # See Section 2.2 and Figure 5 of "Circuit for Shor's Algorithm
+    # using 2n+3 qubits"
 
    # "Solving" for n, necessary to determine number of qubits
     n = math.ceil(math.log2(N))
@@ -265,12 +414,19 @@ def adder_mod(a: int, N: int) -> QuantumCircuit:
 
     # Creating the actual circuit
     # naming it 'adder_mod_N'
-    adder_mod_N = QuantumCircuit(control_register, phi_b_register, zero_register, name='cc_adder_mod_N')
+    adder_mod_N = QuantumCircuit(control_register,
+                                    phi_b_register,
+                                    zero_register,
+                                    name='cc_adder_mod_N')
 
     # gate 1/13 - cc_adder with a
     # ensuring cleaner code by naming gate and specifying a, N
     cc_adder_aN = cc_adder(a,N)
-    adder_mod_N.compose(cc_adder_aN, qubits=[*control_register[:], *phi_b_register[:], *zero_register[:]], inplace=True)
+    adder_mod_N.compose(cc_adder_aN,
+                        qubits=[*control_register[:],
+                                *phi_b_register[:],
+                                *zero_register[:]],
+                        inplace=True)
 
     adder_mod_N.barrier()
 
@@ -297,13 +453,22 @@ def adder_mod(a: int, N: int) -> QuantumCircuit:
 
     # gate 6/13 controlled adder with a = N
     c_add_N = c_adder(N,N)
-    adder_mod_N.compose(c_add_N, qubits=[*control_register[:], *phi_b_register[:], *zero_register[:]], inplace=True)
+    adder_mod_N.compose(c_add_N,
+                        qubits=[*control_register[:],
+                                *phi_b_register[:],
+                                *zero_register[:]],
+                        inplace=True)
 
     adder_mod_N.barrier()
 
-    # gate 7/13 doubly controlled adder inverse (aka doubly controlled subtractor) for a
+    # gate 7/13 doubly controlled adder inverse (aka doubly controlled
+    # subtractor) for a
     cc_sub_a = cc_subtractor(a,N)
-    adder_mod_N.compose(cc_sub_a, qubits=[*control_register[:], *phi_b_register[:], *zero_register[:]], inplace=True)
+    adder_mod_N.compose(cc_sub_a,
+                        qubits=[*control_register[:],
+                                *phi_b_register[:],
+                                *zero_register[:]],
+                        inplace=True)
 
     adder_mod_N.barrier()
 
@@ -334,12 +499,13 @@ def adder_mod(a: int, N: int) -> QuantumCircuit:
 
     # gate 13/13 doubly controlled adder
     cc_sub_a = cc_subtractor(a,N)
-    adder_mod_N.compose(cc_sub_a, qubits=[*control_register[:], *phi_b_register[:], *zero_register[:]], inplace=True
+    adder_mod_N.compose(cc_sub_a,
+                        qubits=[*control_register[:],
+                                *phi_b_register[:],
+                                *zero_register[:]],
+                        inplace=True)
 
     return adder_mod_N
-
-##########################
-
 
 def cc_adder_mod_inv(a: int, N: int) -> QuantumCircuit:
     """Returns the inverse of the doubly controlled modular adder
@@ -355,6 +521,11 @@ def cc_adder_mod_inv(a: int, N: int) -> QuantumCircuit:
     Returns
     -------
     QuantumCircuit
+        Unitary operator that takes the input state
+            |c_1 c_2>_2 |phi(b)>_(n+1)
+        and outputs the state
+            |c_1 c_2>_2 |phi(b-a) mod N>_(n+1)  if c_1==1 and c_2==1
+            |c_1 c_2>_2 |phi(b)>_(n+1)          otherwise
     """
     # Number of bits required to represent N
     n = math.ceil(math.log2(N))
@@ -425,11 +596,11 @@ def c_mult_mod(a: int, N: int) -> QuantumCircuit:
     Returns
     -------
     QuantumCircuit
-        Controlled multiplier circuit that takes 3 inputs
+        Unitary operator that takes 3 inputs
             |c>_1     control qubit
             |x>_n
             |b>_n
-        with the output
+        and outputs the state
             |c> |x> |b>             if c==0
             |c> |x> |b+a*x mod N>   if c==1
     """
@@ -488,6 +659,13 @@ def c_mult_mod_inv(a: int, N: int) -> QuantumCircuit:
     Returns
     -------
     QuantumCircuit
+        Unitary operator that takes 3 inputs
+            |c>_1     control qubit
+            |x>_n
+            |b>_n
+        and outputs the state
+            |c> |x> |b>             if c==0
+            |c> |x> |b-a*x mod N>   if c==1
     """
     # Number of bits required to represent N
     n = math.ceil(math.log2(N))
@@ -528,9 +706,3 @@ def c_mult_mod_inv(a: int, N: int) -> QuantumCircuit:
     qc.compose(qft.inverse().to_gate(), input2_qr, inplace=True)
 
     return qc
-
-########################################################################
-# Other helper functions
-########################################################################
-
-#TODO anything that is not a circuit can go here
