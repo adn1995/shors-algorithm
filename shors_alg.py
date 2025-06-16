@@ -392,7 +392,7 @@ def cc_adder_mod(a: int, N: int) -> QuantumCircuit:
    # "Solving" for n, necessary to determine number of qubits
     n = math.ceil(math.log2(N))
 
-    # Makking the control register, which requires two qubits
+    # Making the control register, which requires two qubits
     control_register = QuantumRegister(size=2, name='c')
     # This is the register where most of the work happens
     phi_b_register = QuantumRegister(size=n+1, name='phi(b)')
@@ -407,19 +407,21 @@ def cc_adder_mod(a: int, N: int) -> QuantumCircuit:
                                     zero_register,
                                     name='cc_adder_mod_N')
 
+    # Subcircuits that we will use later
+    c_add_N = c_adder(N,N).to_gate()
+    cc_adder_aN = cc_adder(a,N).to_gate()
+    sub_N = subtractor(N,N).to_gate()
+    cc_sub_aN = cc_subtractor(a,N).to_gate()
+
     # gate 1/13 - cc_adder with a
-    # ensuring cleaner code by naming gate and specifying a, N
-    cc_adder_aN = cc_adder(a,N)
     adder_mod_N.compose(cc_adder_aN,
                         qubits=[*control_register[:],
-                                *phi_b_register[:],
-                                *zero_register[:]],
+                                *phi_b_register[:]],
                         inplace=True)
 
     adder_mod_N.barrier()
 
     # gate 2/13 inverse adder (aka subtractor) with a = N
-    sub_N = subtractor(N,N)
     adder_mod_N.compose(sub_N, qubits=[*phi_b_register[:]], inplace=True)
 
     adder_mod_N.barrier()
@@ -440,22 +442,18 @@ def cc_adder_mod(a: int, N: int) -> QuantumCircuit:
     adder_mod_N.barrier()
 
     # gate 6/13 controlled adder with a = N
-    c_add_N = c_adder(N,N)
     adder_mod_N.compose(c_add_N,
-                        qubits=[*control_register[:],
-                                *phi_b_register[:],
-                                *zero_register[:]],
+                        qubits=[zero_register[0],
+                                *phi_b_register[:]],
                         inplace=True)
 
     adder_mod_N.barrier()
 
     # gate 7/13 doubly controlled adder inverse (aka doubly controlled
     # subtractor) for a
-    cc_sub_a = cc_subtractor(a,N)
-    adder_mod_N.compose(cc_sub_a,
+    adder_mod_N.compose(cc_sub_aN,
                         qubits=[*control_register[:],
-                                *phi_b_register[:],
-                                *zero_register[:]],
+                                *phi_b_register[:]],
                         inplace=True)
 
     adder_mod_N.barrier()
@@ -486,11 +484,9 @@ def cc_adder_mod(a: int, N: int) -> QuantumCircuit:
     adder_mod_N.barrier()
 
     # gate 13/13 doubly controlled adder
-    cc_sub_a = cc_subtractor(a,N)
-    adder_mod_N.compose(cc_sub_a,
+    adder_mod_N.compose(cc_sub_aN,
                         qubits=[*control_register[:],
-                                *phi_b_register[:],
-                                *zero_register[:]],
+                                *phi_b_register[:]],
                         inplace=True)
 
     return adder_mod_N
@@ -535,7 +531,7 @@ def cc_adder_mod_inv(a: int, N: int) -> QuantumCircuit:
     # QFT circuit for n+1 qubit register
     qft = QFT(n+1)
 
-    qc.compose(cc_subtractor(a,N),
+    qc.compose(cc_subtractor(a,N).to_gate(),
                 qubits=[*control_qr, *input_qr],
                 inplace=True)
 
@@ -549,13 +545,13 @@ def cc_adder_mod_inv(a: int, N: int) -> QuantumCircuit:
 
     qc.compose(qft.to_gate(), input_qr, inplace=True)
 
-    qc.compose(cc_adder(a,N),
+    qc.compose(cc_adder(a,N).to_gate(),
                 qubits=[*control_qr, *input_qr],
                 inplace=True)
 
-    qc.compose(c_subtractor(N,N),
-            qubits=[ancilla, input_qr[n]],
-            inplace=True)
+    qc.compose(c_subtractor(N,N).to_gate(),
+                qubits=[ancilla[0], *input_qr],
+                inplace=True)
 
     qc.compose(qft.inverse().to_gate(), input_qr, inplace=True)
 
@@ -563,9 +559,9 @@ def cc_adder_mod_inv(a: int, N: int) -> QuantumCircuit:
 
     qc.compose(qft.to_gate(), input_qr, inplace=True)
 
-    qc.compose(adder(N,N), input_qr, inplace=True)
+    qc.compose(adder(N,N).to_gate(), input_qr, inplace=True)
 
-    qc.compose(cc_subtractor(a,N),
+    qc.compose(cc_subtractor(a,N).to_gate(),
                 qubits=[*control_qr, *input_qr],
                 inplace=True)
 
