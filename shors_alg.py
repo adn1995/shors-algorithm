@@ -82,10 +82,12 @@ def oracle(a: int, N: int) -> QuantumCircuit:
     for i in range(n):
         qc.cswap(control_qubit=control_qr,
             target_qubit1=input_qr[i],
-            target_qubit2=ancilla[i+1])
+            target_qubit2=ancilla[i])
 
     # Inverse controlled multiplier
-    qc.compose(c_mult_mod_inv(a,N).to_gate(),
+    # WARNING: should be a^-1 mod N, not a itself
+    a_inv = pow(a,-1,N)
+    qc.compose(c_mult_mod_inv(a_inv,N).to_gate(),
                 qubits=[*control_qr, *input_qr, *ancilla],
                 inplace=True)
 
@@ -135,7 +137,8 @@ def adder(a: int, N: int) -> QuantumCircuit:
 
     # Setting up Quantum Register
     quantum_register = QuantumRegister(size=n+1, name ='x')
-    phi_add_a = QuantumCircuit(quantum_register, name="phi_add_a")
+    phi_add_a = QuantumCircuit(quantum_register,
+                                name="phiADD({})".format(a))
 
     # Building P_n(a) by making a phase gate p
     # for each qubit
@@ -172,7 +175,8 @@ def subtractor(a: int, N: int) -> QuantumCircuit:
 
     # Setting up Quantum Register
     quantum_register = QuantumRegister(size=n+1, name ='x')
-    phi_sub_a = QuantumCircuit(quantum_register, name="phi_sub_a")
+    phi_sub_a = QuantumCircuit(quantum_register,
+                                name="phiSUB({})".format(a))
 
     # Building rev(P_n(a)) by making a phase gate p
     # for each qubit
@@ -220,7 +224,7 @@ def c_adder(a: int, N: int) -> QuantumCircuit:
     # Setting up the circuit
     c_phi_add_a = QuantumCircuit(control_register,
                                     phi_b_register,
-                                    name='c_phi_add_a')
+                                    name='CphiADD({})'.format(a))
 
     # Building c_P_n(a) by making a phase gate p
     # for each qubit
@@ -263,11 +267,11 @@ def c_subtractor(a: int, N: int) -> QuantumCircuit:
     # Setting up the circuit
     c_phi_sub_a = QuantumCircuit(control_register,
                                     phi_b_register,
-                                    name='c_phi_sub_a')
+                                    name="CphiSUB({})".format(a))
 
     # Building c_P_n(a) by making a phase gate p
     # for each qubit
-    for idx, q in enumerate((phi_b_register)):
+    for idx, q in enumerate(phi_b_register):
         c_phi_sub_a.cp(math.pi * -a / (2**(n-idx)), control_register, q)
 
     return c_phi_sub_a
@@ -311,7 +315,7 @@ def cc_adder(a: int, N: int) -> QuantumCircuit:
     # Setting up the circuit
     cc_phi_add_a = QuantumCircuit(control_register,
                                     phi_b_register,
-                                    name='cc_phi_add_a')
+                                    name="CCphiADD({})".format(a))
 
     # Building cc_P_n(a) by making a phase gate p
     # for each qubit
@@ -354,7 +358,7 @@ def cc_subtractor(a: int, N: int) -> QuantumCircuit:
     # Setting up the circuit
     cc_phi_sub_a = QuantumCircuit(control_register,
                                     phi_b_register,
-                                    name='cc_phi_sub_a')
+                                    name="CCphiSUB({})".format(a))
 
     # Building cc_P_n(a) by making a phase gate p
     # for each qubit
@@ -405,7 +409,7 @@ def cc_adder_mod(a: int, N: int) -> QuantumCircuit:
     adder_mod_N = QuantumCircuit(control_register,
                                     phi_b_register,
                                     zero_register,
-                                    name='cc_adder_mod_N')
+                                    name="CCphiADD({})MOD({})".format(a,N))
 
     # Subcircuits that we will use later
     c_add_N = c_adder(N,N).to_gate()
@@ -415,19 +419,19 @@ def cc_adder_mod(a: int, N: int) -> QuantumCircuit:
 
     # gate 1/13 - cc_adder with a
     adder_mod_N.compose(cc_adder_aN,
-                        qubits=[*control_register[:],
-                                *phi_b_register[:]],
+                        qubits=[*control_register,
+                                *phi_b_register],
                         inplace=True)
 
     #adder_mod_N.barrier()
 
     # gate 2/13 inverse adder (aka subtractor) with a = N
-    adder_mod_N.compose(sub_N, qubits=[*phi_b_register[:]], inplace=True)
+    adder_mod_N.compose(sub_N, qubits=[*phi_b_register], inplace=True)
 
     #adder_mod_N.barrier()
 
     # gate 3/13 qft_inv
-    adder_mod_N.compose(QFT(n+1).inverse(), phi_b_register[:], inplace=True)
+    adder_mod_N.compose(QFT(n+1).inverse(), phi_b_register, inplace=True)
 
     #adder_mod_N.barrier()
 
@@ -437,14 +441,14 @@ def cc_adder_mod(a: int, N: int) -> QuantumCircuit:
     #adder_mod_N.barrier()
 
     # gate 5/13 qft
-    adder_mod_N.compose(QFT(n+1), phi_b_register[:], inplace=True)
+    adder_mod_N.compose(QFT(n+1), phi_b_register, inplace=True)
 
     #adder_mod_N.barrier()
 
     # gate 6/13 controlled adder with a = N
     adder_mod_N.compose(c_add_N,
                         qubits=[zero_register[0],
-                                *phi_b_register[:]],
+                                *phi_b_register],
                         inplace=True)
 
     #adder_mod_N.barrier()
@@ -452,14 +456,14 @@ def cc_adder_mod(a: int, N: int) -> QuantumCircuit:
     # gate 7/13 doubly controlled adder inverse (aka doubly controlled
     # subtractor) for a
     adder_mod_N.compose(cc_sub_aN,
-                        qubits=[*control_register[:],
-                                *phi_b_register[:]],
+                        qubits=[*control_register,
+                                *phi_b_register],
                         inplace=True)
 
     #adder_mod_N.barrier()
 
     # gate 8/13 qft inverse on phi_b
-    adder_mod_N.compose(QFT(n+1).inverse(), phi_b_register[:], inplace=True)
+    adder_mod_N.compose(QFT(n+1).inverse(), phi_b_register, inplace=True)
 
     #adder_mod_N.barrier()
 
@@ -479,14 +483,14 @@ def cc_adder_mod(a: int, N: int) -> QuantumCircuit:
     #adder_mod_N.barrier()
 
     # gate 12/13 qft
-    adder_mod_N.compose(QFT(n+1), phi_b_register[:], inplace=True)
+    adder_mod_N.compose(QFT(n+1), phi_b_register, inplace=True)
 
     #adder_mod_N.barrier()
 
     # gate 13/13 doubly controlled adder
-    adder_mod_N.compose(cc_sub_aN,
-                        qubits=[*control_register[:],
-                                *phi_b_register[:]],
+    adder_mod_N.compose(cc_adder_aN,
+                        qubits=[*control_register,
+                                *phi_b_register],
                         inplace=True)
 
     return adder_mod_N
@@ -526,7 +530,7 @@ def cc_adder_mod_inv(a: int, N: int) -> QuantumCircuit:
     ancilla = AncillaRegister(1, name="a")
 
     qc = QuantumCircuit(control_qr, input_qr, ancilla,
-                        name="CCphi({})MOD({})inv".format(str(a),str(N)))
+                        name="CCphiADD({})MOD({})inv".format(a,N))
 
     # QFT circuit for n+1 qubit register
     qft = QFT(n+1)
@@ -608,7 +612,7 @@ def c_mult_mod(a: int, N: int) -> QuantumCircuit:
     ancilla = AncillaRegister(1, name="a")
 
     qc = QuantumCircuit(control_qr, input1_qr, input2_qr, ancilla,
-                        name="CMULT({})MOD({})".format(str(a),str(N)))
+                        name="CMULT({})MOD({})".format(a,N))
 
     # QFT circuit for n+1 qubit register
     qft = QFT(n+1)
@@ -620,9 +624,9 @@ def c_mult_mod(a: int, N: int) -> QuantumCircuit:
     for i in range(n):
         qc.compose(cc_adder_mod((2**i)*a, N).to_gate(),
                     qubits=[control_qr,
-                        input1_qr[i],
-                        *input2_qr,
-                        ancilla],
+                            input1_qr[i],
+                            *input2_qr,
+                            ancilla],
                     inplace=True)
 
     # Apply inverse QFT to |b> register
@@ -669,7 +673,7 @@ def c_mult_mod_inv(a: int, N: int) -> QuantumCircuit:
     ancilla = AncillaRegister(1, name="a")
 
     qc = QuantumCircuit(control_qr, input1_qr, input2_qr, ancilla,
-                        name="CMULT({})MOD({})".format(str(a),str(N)))
+                        name="CMULT({})MOD({})inv".format(a,N))
 
     # QFT circuit for n+1 qubit register
     qft = QFT(n+1)
