@@ -135,7 +135,8 @@ def adder(a: int, N: int) -> QuantumCircuit:
 
     # Setting up Quantum Register
     quantum_register = QuantumRegister(size=n+1, name ='x')
-    phi_add_a = QuantumCircuit(quantum_register, name="phi_add_a")
+    phi_add_a = QuantumCircuit(quantum_register,
+                                name="phiADD({})".format(a))
 
     # Building P_n(a) by making a phase gate p
     # for each qubit
@@ -172,7 +173,8 @@ def subtractor(a: int, N: int) -> QuantumCircuit:
 
     # Setting up Quantum Register
     quantum_register = QuantumRegister(size=n+1, name ='x')
-    phi_sub_a = QuantumCircuit(quantum_register, name="phi_sub_a")
+    phi_sub_a = QuantumCircuit(quantum_register,
+                                name="phiSUB({})".format(a))
 
     # Building rev(P_n(a)) by making a phase gate p
     # for each qubit
@@ -220,7 +222,7 @@ def c_adder(a: int, N: int) -> QuantumCircuit:
     # Setting up the circuit
     c_phi_add_a = QuantumCircuit(control_register,
                                     phi_b_register,
-                                    name='c_phi_add_a')
+                                    name='CphiADD({})'.format(a))
 
     # Building c_P_n(a) by making a phase gate p
     # for each qubit
@@ -263,7 +265,7 @@ def c_subtractor(a: int, N: int) -> QuantumCircuit:
     # Setting up the circuit
     c_phi_sub_a = QuantumCircuit(control_register,
                                     phi_b_register,
-                                    name='c_phi_sub_a')
+                                    name="CphiSUB({})".format(a))
 
     # Building c_P_n(a) by making a phase gate p
     # for each qubit
@@ -311,7 +313,7 @@ def cc_adder(a: int, N: int) -> QuantumCircuit:
     # Setting up the circuit
     cc_phi_add_a = QuantumCircuit(control_register,
                                     phi_b_register,
-                                    name='cc_phi_add_a')
+                                    name="CCphiADD({})".format(a))
 
     # Building cc_P_n(a) by making a phase gate p
     # for each qubit
@@ -354,7 +356,7 @@ def cc_subtractor(a: int, N: int) -> QuantumCircuit:
     # Setting up the circuit
     cc_phi_sub_a = QuantumCircuit(control_register,
                                     phi_b_register,
-                                    name='cc_phi_sub_a')
+                                    name="CCphiSUB({})".format(a))
 
     # Building cc_P_n(a) by making a phase gate p
     # for each qubit
@@ -405,7 +407,7 @@ def cc_adder_mod(a: int, N: int) -> QuantumCircuit:
     adder_mod_N = QuantumCircuit(control_register,
                                     phi_b_register,
                                     zero_register,
-                                    name='cc_adder_mod_N')
+                                    name="CCphiADD({})MOD({})".format(a,N))
 
     # Subcircuits that we will use later
     c_add_N = c_adder(N,N).to_gate()
@@ -526,7 +528,7 @@ def cc_adder_mod_inv(a: int, N: int) -> QuantumCircuit:
     ancilla = AncillaRegister(1, name="a")
 
     qc = QuantumCircuit(control_qr, input_qr, ancilla,
-                        name="CCphi({})MOD({})inv".format(str(a),str(N)))
+                        name="CCphiADD({})MOD({})inv".format(a,N))
 
     # QFT circuit for n+1 qubit register
     qft = QFT(n+1)
@@ -608,7 +610,7 @@ def c_mult_mod(a: int, N: int) -> QuantumCircuit:
     ancilla = AncillaRegister(1, name="a")
 
     qc = QuantumCircuit(control_qr, input1_qr, input2_qr, ancilla,
-                        name="CMULT({})MOD({})".format(str(a),str(N)))
+                        name="CMULT({})MOD({})".format(a,N))
 
     # QFT circuit for n+1 qubit register
     qft = QFT(n+1)
@@ -669,7 +671,7 @@ def c_mult_mod_inv(a: int, N: int) -> QuantumCircuit:
     ancilla = AncillaRegister(1, name="a")
 
     qc = QuantumCircuit(control_qr, input1_qr, input2_qr, ancilla,
-                        name="CMULT({})MOD({})".format(str(a),str(N)))
+                        name="CMULT({})MOD({})inv".format(a,N))
 
     # QFT circuit for n+1 qubit register
     qft = QFT(n+1)
