@@ -486,7 +486,7 @@ def cc_adder_mod(a: int, N: int) -> QuantumCircuit:
     #adder_mod_N.barrier()
 
     # gate 13/13 doubly controlled adder
-    adder_mod_N.compose(cc_sub_aN,
+    adder_mod_N.compose(cc_adder_aN,
                         qubits=[*control_register[:],
                                 *phi_b_register[:]],
                         inplace=True)
