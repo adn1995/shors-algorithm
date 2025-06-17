@@ -9,11 +9,12 @@ Many of the steps in this algorithm can be performed classically, but the quantu
 
 ## Contents
 
-## Building Blocks and Outline 
+### Building Blocks and Outline 
 
 In "Circuit for Shor's algorithm using $2n+3$ qubits", Beauregard offers a circuit construction for the order-finding sub-algorithm. We follow this construction, with some restrictions on the types of gates that we are allowed to use.
 
 We restrict our construction to:
+
 1. 1-qubit gates
 2. multi-controlled phase gates
 3. X gates with any number of controls
@@ -29,12 +30,12 @@ The best place to read more about our oracle implementation is in the conversati
 4. Building CMult(a)mod(N)
 5. The Complete Oracle
 
-## Sources 
+### Sources 
 
 Our sources are also listed in section 6 of the Jupyter notebook. 
 
 ## Points of Contact 
 
-Amanda Curtis - dr.curtis.math (at) gmail (dot) com
-Arthur Diep-Nguyen - arthur (at) math (dot) ucsb (dot) edu
+- Amanda Curtis - dr.curtis.math (at) gmail (dot) com
+- Arthur Diep-Nguyen - arthur (at) math (dot) ucsb (dot) edu
 
